@@ -97,7 +97,7 @@ export default function Login() {
                 type="email"
                 name="email"
                 autoComplete="email"
-                placeholder="you@example.com"
+                placeholder="Enter your email address"
                 value={form.email}
                 onChange={handleChange}
               />
@@ -109,7 +109,7 @@ export default function Login() {
                 type="password"
                 name="password"
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 value={form.password}
                 onChange={handleChange}
               />

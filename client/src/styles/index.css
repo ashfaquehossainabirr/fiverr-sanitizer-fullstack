@@ -779,6 +779,35 @@ a {
   display: flex;
   flex-direction: column;
   gap: 2px;
+
+  /* Custom scrollbar (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(14, 159, 110, 0.55) transparent;
+}
+
+/* Custom scrollbar (WebKit: Chrome, Edge, Safari) */
+.sidebar-tabs::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-tabs::-webkit-scrollbar-thumb {
+  background-color: rgba(14, 159, 110, 0.45);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-tabs:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(14, 159, 110, 0.7);
+}
+
+.sidebar-tabs::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
 }
 
 .sidebar-empty {
