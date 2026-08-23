@@ -176,6 +176,9 @@ a {
 
 /* ==========================================================================
    AUTH SCREENS (Login / Register)
+   Signature element: the showcase pane runs the product's own diagnostic
+   preview — the same dark mono canvas + wavy-underline redactions used on
+   the dashboard — so signing in is the first proof of what the tool does.
    ========================================================================== */
 
 .auth-screen {
@@ -186,19 +189,197 @@ a {
   padding: 24px;
 }
 
-.auth-card {
+.auth-shell {
   width: 100%;
-  max-width: 420px;
+  max-width: 940px;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: 40px 36px;
+  overflow: hidden;
+}
+
+/* ---------------------------- SHOWCASE (left) ---------------------------- */
+
+.auth-showcase {
+  position: relative;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(14, 159, 110, 0.22), transparent 55%),
+    var(--color-ink);
+  color: #DCEDE5;
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.auth-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-wordmark .auth-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-size: 15px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.auth-wordmark-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.auth-showcase h2 {
+  font-size: 25px;
+  line-height: 1.3;
+  color: #fff;
+  max-width: 30ch;
+}
+
+.auth-showcase h2 em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+
+.auth-demo {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(124, 231, 184, 0.18);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-demo-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(124, 231, 184, 0.14);
+}
+
+.auth-demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.auth-demo-dot.is-red { background: #E5807A; }
+.auth-demo-dot.is-amber { background: #F7CE7B; }
+.auth-demo-dot.is-green { background: #7CE7B8; }
+
+.auth-demo-filename {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(220, 237, 229, 0.55);
+}
+
+.auth-demo-body {
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.75;
+  background: transparent;
+  color: #DCEDE5;
+}
+
+.auth-demo-body .highlight {
+  padding: 0 1px;
+  border-radius: 3px;
+  color: #7CE7B8;
+  background: rgba(124, 231, 184, 0.14);
+  text-decoration: underline wavy rgba(124, 231, 184, 0.6);
+  text-underline-offset: 3px;
+}
+
+.auth-demo-body .phone-highlight {
+  padding: 0 1px;
+  border-radius: 3px;
+  color: #F7CE7B;
+  background: rgba(247, 206, 123, 0.14);
+}
+
+.auth-demo-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 13px;
+  margin-left: 1px;
+  background: var(--color-accent);
+  vertical-align: -2px;
+  animation: auth-cursor-blink 1.1s step-end infinite;
+}
+
+@keyframes auth-cursor-blink {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.auth-demo-caption {
+  margin-top: -8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(220, 237, 229, 0.6);
+}
+
+.auth-showcase-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(124, 231, 184, 0.14);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: rgba(220, 237, 229, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-showcase-foot .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(124, 231, 184, 0.18);
+  flex-shrink: 0;
+}
+
+/* ---------------------------- FORM PANEL (right) ---------------------------- */
+
+.auth-panel {
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-panel-mobile-brand {
+  display: none;
 }
 
 .auth-brand {
-  text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
+}
+
+.auth-brand h1 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.auth-brand p {
+  color: var(--color-ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .auth-logo {
@@ -214,17 +395,6 @@ a {
   font-weight: 600;
   font-size: 18px;
   margin-bottom: 16px;
-}
-
-.auth-brand h1 {
-  font-size: 24px;
-  margin-bottom: 8px;
-}
-
-.auth-brand p {
-  color: var(--color-ink-soft);
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .auth-error {
@@ -307,6 +477,41 @@ a {
 
 .auth-switch a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    max-width: 460px;
+  }
+
+  .auth-showcase {
+    display: none;
+  }
+
+  .auth-panel {
+    padding: 36px 30px;
+  }
+
+  .auth-panel-mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .auth-panel-mobile-brand .auth-logo {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+
+  .auth-panel-mobile-brand span:last-child {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+  }
 }
 
 /* ==========================================================================

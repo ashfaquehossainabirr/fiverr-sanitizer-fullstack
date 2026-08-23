@@ -46,72 +46,115 @@ export default function Register() {
 
   return (
     <div className="auth-screen">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <span className="auth-logo">&gt;_</span>
-          <h1>Create your account</h1>
-          <p>Organize sanitized Fiverr messages into tabs, synced everywhere.</p>
+      <div className="auth-shell">
+        <aside className="auth-showcase">
+          <div className="auth-wordmark">
+            <span className="auth-logo">FS</span>
+            <span className="auth-wordmark-text">Fiverr Sanitizer</span>
+          </div>
+
+          <h2>
+            Write freely. Ship <em>clean</em>.
+          </h2>
+
+          <div className="auth-demo" aria-hidden="true">
+            <div className="auth-demo-bar">
+              <span className="auth-demo-dot is-red" />
+              <span className="auth-demo-dot is-amber" />
+              <span className="auth-demo-dot is-green" />
+              <span className="auth-demo-filename">message.txt — sanitized</span>
+            </div>
+            <div className="auth-demo-body">
+              Hey! Thanks for the order 🙌 You can <span className="highlight">e_mail</span> me
+              or ping me on <span className="highlight">Wh_atsApp</span> — my number&apos;s{" "}
+              <span className="phone-highlight">1-7-8-1-2-3-4-5-6-7</span>. We can sort{" "}
+              <span className="highlight">pa_yment</span> once the brief&apos;s locked in
+              <span className="auth-demo-cursor" />
+            </div>
+          </div>
+
+          <p className="auth-demo-caption">
+            Flags emails, phone numbers and 30+ reserved terms automatically — so
+            your messages stay Fiverr-safe.
+          </p>
+
+          <div className="auth-showcase-foot">
+            <span className="status-dot" />
+            Free to join — takes less than a minute
+          </div>
+        </aside>
+
+        <div className="auth-panel">
+          <div className="auth-panel-mobile-brand">
+            <span className="auth-logo">FS</span>
+            <span>Fiverr Sanitizer</span>
+          </div>
+
+          <div className="auth-brand">
+            <h1>Create your account</h1>
+            <p>Organize sanitized Fiverr messages into tabs, synced everywhere.</p>
+          </div>
+
+          {error && <div className="auth-error">{error}</div>}
+
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <label>
+              Full Name
+              <input
+                type="text"
+                name="name"
+                autoComplete="name"
+                placeholder="Ashfaque Hossain Abir"
+                value={form.name}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label>
+              Email
+              <input
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label>
+              Password
+              <input
+                type="password"
+                name="password"
+                autoComplete="new-password"
+                placeholder="At least 6 characters"
+                value={form.password}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label>
+              Confirm Password
+              <input
+                type="password"
+                name="confirmPassword"
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+              />
+            </label>
+
+            <button type="submit" className="auth-submit" disabled={submitting}>
+              {submitting ? "Creating account..." : "Create Account"}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </div>
-
-        {error && <div className="auth-error">{error}</div>}
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            Full Name
-            <input
-              type="text"
-              name="name"
-              autoComplete="name"
-              placeholder="Ashfaque Hossain Abir"
-              value={form.name}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label>
-            Email
-            <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label>
-            Password
-            <input
-              type="password"
-              name="password"
-              autoComplete="new-password"
-              placeholder="At least 6 characters"
-              value={form.password}
-              onChange={handleChange}
-            />
-          </label>
-
-          <label>
-            Confirm Password
-            <input
-              type="password"
-              name="confirmPassword"
-              autoComplete="new-password"
-              placeholder="Re-enter your password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-            />
-          </label>
-
-          <button type="submit" className="auth-submit" disabled={submitting}>
-            {submitting ? "Creating account..." : "Create Account"}
-          </button>
-        </form>
-
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Log in</Link>
-        </p>
       </div>
     </div>
   );

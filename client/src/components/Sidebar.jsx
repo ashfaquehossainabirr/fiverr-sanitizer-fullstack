@@ -59,7 +59,7 @@ export default function Sidebar({
       <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <span className="sidebar-logo">&gt;_</span>
+            <span className="sidebar-logo">FS</span>
             <span>Sanitizer</span>
           </div>
           <button type="button" className="sidebar-close" onClick={onClose} aria-label="Close menu">

@@ -90,6 +90,24 @@ point `CLIENT_ORIGIN` in `server/.env` at that production URL. Deploy the
 `server/` folder to any Node host (Render, Railway, Fly.io, a VPS, etc.)
 alongside your MongoDB instance.
 
+### Deploying frontend and backend to different domains (e.g. Vercel + Render)
+
+If the client and server aren't served from the same domain, the client
+needs to know the backend's URL at build time — set this as an environment
+variable in your Vercel (or other host) project settings:
+
+- `VITE_API_URL` — the backend's URL including the `/api` prefix, e.g.
+  `https://your-backend.onrender.com/api`
+
+And on the backend host (Render), set:
+
+- `CLIENT_ORIGIN` — the frontend's deployed URL, e.g.
+  `https://your-frontend.vercel.app`
+
+A `client/vercel.json` is included with a catch-all rewrite so client-side
+routes (like `/login`) don't 404 on a hard refresh. After setting the env
+var, trigger a redeploy on Vercel (env var changes require a rebuild).
+
 ## Project structure
 
 ```
