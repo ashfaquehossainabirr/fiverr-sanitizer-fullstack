@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required."],
       minlength: 6,
       select: false
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user"
+    },
+    isActive: {
+      type: Boolean,
+      default: true
     }
   },
   { timestamps: true }
@@ -44,6 +53,8 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     id: this._id,
     name: this.name,
     email: this.email,
+    role: this.role,
+    isActive: this.isActive,
     createdAt: this.createdAt
   };
 };

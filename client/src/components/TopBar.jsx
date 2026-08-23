@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 function getInitials(name) {
@@ -8,7 +9,7 @@ function getInitials(name) {
 }
 
 export default function TopBar({ activeTabName, onMenuClick, onAvatarClick }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <header className="topbar">
@@ -21,9 +22,17 @@ export default function TopBar({ activeTabName, onMenuClick, onAvatarClick }) {
         <p>{activeTabName || "Select or create a tab to get started"}</p>
       </div>
 
-      <button type="button" className="avatar-btn" onClick={onAvatarClick} aria-label="Open account settings">
-        <span className="avatar-circle">{getInitials(user?.name)}</span>
-      </button>
+      <div className="topbar-right">
+        {isAdmin && (
+          <Link to="/admin" className="admin-pill-link" title="Admin Dashboard">
+            Admin
+          </Link>
+        )}
+
+        <button type="button" className="avatar-btn" onClick={onAvatarClick} aria-label="Open account settings">
+          <span className="avatar-circle">{getInitials(user?.name)}</span>
+        </button>
+      </div>
     </header>
   );
 }
