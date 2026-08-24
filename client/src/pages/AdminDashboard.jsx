@@ -4,6 +4,7 @@ import api from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import ResetPasswordModal from "../components/ResetPasswordModal.jsx";
+import Loader from "../components/Loader.jsx";
 
 function getInitials(name) {
   if (!name) return "?";
@@ -172,7 +173,9 @@ export default function AdminDashboard() {
         </div>
 
         {loading ? (
-          <div className="dashboard-loading">Loading users...</div>
+          <div className="dashboard-loading">
+            <Loader label="Loading users" />
+          </div>
         ) : filteredUsers.length === 0 ? (
           <div className="dashboard-loading">
             {users.length === 0 ? "No users have registered yet." : "No users match your search."}

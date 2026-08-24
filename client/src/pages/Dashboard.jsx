@@ -5,6 +5,7 @@ import TopBar from "../components/TopBar.jsx";
 import Editor from "../components/Editor.jsx";
 import SavedMessages from "../components/SavedMessages.jsx";
 import AccountModal from "../components/AccountModal.jsx";
+import Loader from "../components/Loader.jsx";
 
 export default function Dashboard() {
   const [tabs, setTabs] = useState([]);
@@ -153,7 +154,9 @@ export default function Dashboard() {
           )}
 
           {tabsLoading ? (
-            <div className="dashboard-loading">Loading your workspace...</div>
+            <div className="dashboard-loading">
+              <Loader label="Loading your workspace" />
+            </div>
           ) : tabs.length === 0 ? (
             <div className="dashboard-loading">
               You don&apos;t have any tabs yet. Use <strong>+ New Tab</strong> in the sidebar to create your first one.

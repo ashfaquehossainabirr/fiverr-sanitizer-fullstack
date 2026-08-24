@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ConfirmModal from "./ConfirmModal.jsx";
 import ViewMessageModal from "./ViewMessageModal.jsx";
+import Loader from "./Loader.jsx";
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
@@ -36,7 +37,11 @@ export default function SavedMessages({ messages, loading, onDelete }) {
   };
 
   if (loading) {
-    return <div className="saved-messages-empty">Loading saved messages...</div>;
+    return (
+      <div className="saved-messages-empty">
+        <Loader label="Loading saved messages" />
+      </div>
+    );
   }
 
   if (!messages.length) {

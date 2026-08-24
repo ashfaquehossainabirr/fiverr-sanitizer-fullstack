@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
+import Loader from "./components/Loader.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -9,7 +10,13 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 function PublicOnlyRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div className="app-loading-screen">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="app-loading-screen">
+        <Loader full label="Loading" />
+      </div>
+    );
+  }
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
