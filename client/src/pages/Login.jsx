@@ -67,7 +67,7 @@ export default function Login() {
           </div>
 
           <p className="auth-demo-caption">
-            Flags emails, phone numbers and 30+ reserved terms automatically — so
+            Flags emails, phone numbers and 30+ reserved terms automatically so
             your messages stay Fiverr-safe.
           </p>
 

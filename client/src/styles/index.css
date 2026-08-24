@@ -1435,7 +1435,7 @@ a {
 
 textarea {
   width: 100%;
-  min-height: 220px;
+  min-height: 233px;
   padding: 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-strong);
