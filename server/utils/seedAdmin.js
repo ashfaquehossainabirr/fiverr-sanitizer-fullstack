@@ -30,10 +30,11 @@ async function seedAdmin() {
   if (user) {
     user.role = "admin";
     user.isActive = true;
+    user.isApproved = true;
     await user.save();
     console.log(`Existing user ${email} promoted to admin.`);
   } else {
-    user = await User.create({ name, email, password, role: "admin" });
+    user = await User.create({ name, email, password, role: "admin", isApproved: true });
     console.log(`Admin account created for ${email}.`);
   }
 

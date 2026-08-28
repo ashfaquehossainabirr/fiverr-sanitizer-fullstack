@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Register() {
   const { register } = useAuth();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pending, setPending] = useState(null); // set to the server message once submitted
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -35,8 +35,18 @@ export default function Register() {
 
     setSubmitting(true);
     try {
-      await register(form.name, form.email, form.password);
-      navigate("/dashboard", { replace: true });
+      const data = await register(form.name, form.email, form.password);
+
+      // If pending approval is OFF, the account is already logged in at
+      // this point (AuthContext stored the token) — the surrounding
+      // PublicOnlyRoute will redirect straight to /dashboard on its own,
+      // so there's nothing else to do here.
+      if (data.token) return;
+
+      setPending(
+        data.message ||
+          "Your account has been created and is pending admin approval. You'll be able to log in once it's approved."
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Unable to create your account. Please try again.");
     } finally {
@@ -90,70 +100,87 @@ export default function Register() {
             <span>Fiverr Sanitizer</span>
           </div>
 
-          <div className="auth-brand">
-            <h1>Create your account</h1>
-            <p>Organize sanitized Fiverr messages into tabs, synced everywhere.</p>
-          </div>
+          {pending ? (
+            <>
+              <div className="auth-brand">
+                <h1>Account created 🎉</h1>
+                <p>One more step before you can sign in.</p>
+              </div>
 
-          {error && <div className="auth-error">{error}</div>}
+              <div className="auth-success">{pending}</div>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <label>
-              Full Name
-              <input
-                type="text"
-                name="name"
-                autoComplete="name"
-                placeholder="Enter your name"
-                value={form.name}
-                onChange={handleChange}
-              />
-            </label>
+              <p className="auth-switch">
+                Already approved? <Link to="/login">Log in</Link>
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="auth-brand">
+                <h1>Create your account</h1>
+                <p>Organize sanitized Fiverr messages into tabs, synced everywhere.</p>
+              </div>
 
-            <label>
-              Email
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                placeholder="Enter your email address"
-                value={form.email}
-                onChange={handleChange}
-              />
-            </label>
+              {error && <div className="auth-error">{error}</div>}
 
-            <label>
-              Password
-              <input
-                type="password"
-                name="password"
-                autoComplete="new-password"
-                placeholder="At least 6 characters"
-                value={form.password}
-                onChange={handleChange}
-              />
-            </label>
+              <form className="auth-form" onSubmit={handleSubmit}>
+                <label>
+                  Full Name
+                  <input
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    placeholder="Enter your name"
+                    value={form.name}
+                    onChange={handleChange}
+                  />
+                </label>
 
-            <label>
-              Confirm Password
-              <input
-                type="password"
-                name="confirmPassword"
-                autoComplete="new-password"
-                placeholder="Re-enter your password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-              />
-            </label>
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    placeholder="Enter your email address"
+                    value={form.email}
+                    onChange={handleChange}
+                  />
+                </label>
 
-            <button type="submit" className="auth-submit" disabled={submitting}>
-              {submitting ? "Creating account..." : "Create Account"}
-            </button>
-          </form>
+                <label>
+                  Password
+                  <input
+                    type="password"
+                    name="password"
+                    autoComplete="new-password"
+                    placeholder="At least 6 characters"
+                    value={form.password}
+                    onChange={handleChange}
+                  />
+                </label>
 
-          <p className="auth-switch">
-            Already have an account? <Link to="/login">Log in</Link>
-          </p>
+                <label>
+                  Confirm Password
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    placeholder="Re-enter your password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </label>
+
+                <button type="submit" className="auth-submit" disabled={submitting}>
+                  {submitting ? "Creating account..." : "Create Account"}
+                </button>
+              </form>
+
+              <p className="auth-switch">
+                Already have an account? <Link to="/login">Log in</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

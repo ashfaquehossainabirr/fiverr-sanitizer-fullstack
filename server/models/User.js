@@ -32,6 +32,12 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
+    },
+    // New registrations start unapproved. An admin must approve the
+    // account from the Admin Dashboard before the user can log in.
+    isApproved: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
@@ -55,6 +61,7 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     email: this.email,
     role: this.role,
     isActive: this.isActive,
+    isApproved: this.isApproved,
     createdAt: this.createdAt
   };
 };

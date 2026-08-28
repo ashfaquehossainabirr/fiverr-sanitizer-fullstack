@@ -17,6 +17,10 @@ export async function protect(req, res, next) {
       return res.status(401).json({ message: "Not authorized, user no longer exists." });
     }
 
+    if (!user.isApproved) {
+      return res.status(403).json({ message: "Your account is still pending admin approval." });
+    }
+
     if (!user.isActive) {
       return res.status(403).json({ message: "This account has been deactivated. Contact an administrator." });
     }

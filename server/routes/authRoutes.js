@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
+import Settings from "../models/Settings.js";
 import generateToken from "../utils/generateToken.js";
 import { protect } from "../middleware/auth.js";
 
@@ -23,10 +24,40 @@ router.post("/register", async (req, res, next) => {
       return res.status(409).json({ message: "An account with that email already exists." });
     }
 
-    const user = await User.create({ name: name.trim(), email, password });
-    const token = generateToken(user._id);
+    // Whether the "pending approval" flow is even in effect is controlled
+    // by the admin from the Admin Dashboard (Settings toggle).
+    const settings = await Settings.getSettings();
+    const pendingApprovalEnabled = settings.pendingApprovalEnabled;
 
-    res.status(201).json({ token, user: user.toSafeObject() });
+    // When the toggle is ON (default): accounts are created unapproved and
+    // are NOT logged in automatically. A notification is raised for admins
+    // (surfaced on the Admin Dashboard) and the account stays locked out
+    // of login until an admin approves it there.
+    //
+    // When the toggle is OFF: the approval queue is skipped entirely — the
+    // account is created already approved, and we log them in immediately
+    // (same as a normal login) so the client can redirect straight to the
+    // dashboard.
+    const user = await User.create({
+      name: name.trim(),
+      email,
+      password,
+      isApproved: !pendingApprovalEnabled
+    });
+
+    if (!pendingApprovalEnabled) {
+      const token = generateToken(user._id);
+      return res.status(201).json({
+        message: "Your account has been created.",
+        token,
+        user: user.toSafeObject()
+      });
+    }
+
+    res.status(201).json({
+      message: "Your account has been created and is pending admin approval. You'll be able to log in once it's approved.",
+      user: user.toSafeObject()
+    });
   } catch (err) {
     next(err);
   }
@@ -45,6 +76,12 @@ router.post("/login", async (req, res, next) => {
 
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: "Invalid email or password." });
+    }
+
+    if (!user.isApproved) {
+      return res.status(403).json({
+        message: "Your account is still pending admin approval. You'll be able to log in once an admin approves it."
+      });
     }
 
     if (!user.isActive) {
