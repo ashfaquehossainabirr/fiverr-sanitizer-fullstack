@@ -13,7 +13,8 @@ function formatDate(dateStr) {
   });
 }
 
-export default function SavedMessages({ messages, loading, onDelete }) {
+export default function SavedMessages({ messages, loading, onDelete, onTogglePin, clientNames = {} }) {
+  const [query, setQuery] = useState("");
   const [copiedId, setCopiedId] = useState(null);
   const [viewingMessage, setViewingMessage] = useState(null);
   const [messagePendingDelete, setMessagePendingDelete] = useState(null);
@@ -53,13 +54,36 @@ export default function SavedMessages({ messages, loading, onDelete }) {
     );
   }
 
+  const q = query.trim().toLowerCase();
+  const visible = q
+    ? messages.filter((m) => `${m.sanitizedText} ${clientNames[m.client] || ""}`.toLowerCase().includes(q))
+    : messages;
+
   return (
     <div className="saved-messages-list">
-      {messages.map((msg) => (
-        <div className="saved-message-card" key={msg._id}>
+      {messages.length > 3 && (
+        <input
+          className="panel-search saved-search"
+          type="search"
+          placeholder="Search messages in this tab…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      )}
+
+      {visible.length === 0 && <div className="saved-messages-empty">No saved messages match “{query}”.</div>}
+
+      {visible.map((msg) => (
+        <div className={`saved-message-card ${msg.pinned ? "is-pinned" : ""}`} key={msg._id}>
           <div className="saved-message-meta">
-            <span>{formatDate(msg.createdAt)}</span>
+            <span className="saved-message-when">
+              {msg.pinned && <span className="pin-mark" title="Pinned">📌</span>}
+              {formatDate(msg.createdAt)}
+            </span>
             <div className="saved-message-actions">
+              <button type="button" onClick={() => onTogglePin(msg)}>
+                {msg.pinned ? "Unpin" : "Pin"}
+              </button>
               <button type="button" onClick={() => setViewingMessage(msg)}>
                 View
               </button>
@@ -72,6 +96,11 @@ export default function SavedMessages({ messages, loading, onDelete }) {
             </div>
           </div>
           <p className="saved-message-text">{msg.sanitizedText}</p>
+          {msg.client && clientNames[msg.client] && (
+            <div className="saved-message-foot">
+              <span className="badge badge-ok">{clientNames[msg.client]}</span>
+            </div>
+          )}
         </div>
       ))}
 

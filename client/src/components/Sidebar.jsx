@@ -1,7 +1,18 @@
 import { useState } from "react";
 import ConfirmModal from "./ConfirmModal.jsx";
 
+const VIEWS = [
+  { id: "workspace", label: "Workspace", icon: "✎" },
+  { id: "overview", label: "Overview", icon: "▤" },
+  { id: "clients", label: "Clients", icon: "☺" },
+  { id: "templates", label: "Templates", icon: "❝" },
+  { id: "search", label: "Search", icon: "⌕" }
+];
+
 export default function Sidebar({
+  view,
+  onChangeView,
+  followUpCount = 0,
   tabs,
   activeTabId,
   onSelectTab,
@@ -67,9 +78,41 @@ export default function Sidebar({
           </button>
         </div>
 
-        <button type="button" className="sidebar-new-tab" onClick={() => setCreating((v) => !v)}>
-          + New Tab
-        </button>
+        <p className="sidebar-section-label">Menu</p>
+        <nav className="sidebar-views" aria-label="Sections">
+          {VIEWS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              className={`sidebar-view-btn ${view === v.id ? "active" : ""}`}
+              onClick={() => {
+                onChangeView(v.id);
+                onClose();
+              }}
+            >
+              <span className="sidebar-view-icon" aria-hidden="true">{v.icon}</span>
+              <span>{v.label}</span>
+              {v.id === "clients" && followUpCount > 0 && (
+                <span className="sidebar-badge" title="Follow-ups due">{followUpCount}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-section-row">
+          <p className="sidebar-section-label">
+            Tabs <span className="sidebar-count">{tabs.length}</span>
+          </p>
+          <button
+            type="button"
+            className="sidebar-add-tab"
+            onClick={() => setCreating((v) => !v)}
+            aria-label="New tab"
+            title="New tab"
+          >
+            +
+          </button>
+        </div>
 
         {creating && (
           <form className="sidebar-new-tab-form" onSubmit={handleCreate}>
@@ -96,7 +139,7 @@ export default function Sidebar({
           {tabs.map((tab) => (
             <div
               key={tab._id}
-              className={`sidebar-tab-item ${activeTabId === tab._id ? "active" : ""}`}
+              className={`sidebar-tab-item ${view === "workspace" && activeTabId === tab._id ? "active" : ""}`}
             >
               {renamingId === tab._id ? (
                 <form className="sidebar-rename-form" onSubmit={(e) => submitRename(e, tab._id)}>
@@ -116,6 +159,7 @@ export default function Sidebar({
                     className="sidebar-tab-button"
                     onClick={() => {
                       onSelectTab(tab._id);
+                      onChangeView("workspace");
                       onClose();
                     }}
                     title={tab.name}

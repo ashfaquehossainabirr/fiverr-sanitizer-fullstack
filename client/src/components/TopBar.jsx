@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import ThemeToggle from "./ThemeToggle.jsx";
 
 function getInitials(name) {
   if (!name) return "?";
@@ -8,7 +9,7 @@ function getInitials(name) {
   return initials.join("") || "?";
 }
 
-export default function TopBar({ activeTabName, onMenuClick, onAvatarClick }) {
+export default function TopBar({ title, subtitle, onMenuClick, onAvatarClick }) {
   const { user, isAdmin } = useAuth();
 
   return (
@@ -18,8 +19,13 @@ export default function TopBar({ activeTabName, onMenuClick, onAvatarClick }) {
       </button>
 
       <div className="topbar-title">
-        <h1>Fiverr Message Sanitizer</h1>
-        <p>{activeTabName || "Select or create a tab to get started"}</p>
+        <h1>{title}</h1>
+        {subtitle && (
+          <>
+            <span className="crumb-sep" aria-hidden="true">/</span>
+            <span className="crumb">{subtitle}</span>
+          </>
+        )}
       </div>
 
       <div className="topbar-right">
@@ -28,6 +34,8 @@ export default function TopBar({ activeTabName, onMenuClick, onAvatarClick }) {
             Admin
           </Link>
         )}
+
+        <ThemeToggle />
 
         <button type="button" className="avatar-btn" onClick={onAvatarClick} aria-label="Open account settings">
           <span className="avatar-circle">{getInitials(user?.name)}</span>
