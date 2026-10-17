@@ -18,9 +18,14 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await api.get("/auth/me");
         setUser(data.user);
-      } catch {
-        localStorage.removeItem(TOKEN_KEY);
-        setToken(null);
+      } catch (err) {
+        // Only drop the token when the server actually rejected it. A network blip or a
+        // 5xx used to sign everyone out; now they simply retry on the next load.
+        const status = err.response?.status;
+        if (status === 401 || status === 403) {
+          localStorage.removeItem(TOKEN_KEY);
+          setToken(null);
+        }
         setUser(null);
       } finally {
         setLoading(false);
@@ -89,6 +94,12 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const updateGoal = useCallback(async (monthlyGoal) => {
+    const { data } = await api.put("/users/goal", { monthlyGoal });
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const deleteAccount = useCallback(async (password) => {
     const { data } = await api.delete("/users/account", { data: { password } });
     localStorage.removeItem(TOKEN_KEY);
@@ -109,6 +120,7 @@ export function AuthProvider({ children }) {
     logout,
     updateProfile,
     updatePassword,
+    updateGoal,
     deleteAccount
   };
 

@@ -54,6 +54,19 @@ const PHONE_REGEX = /\b\d{10,15}\b/g;
 
 const URL_REGEX = /\bhttps?:\/\/[^\s]+/gi;
 
+// Markdown-style links whose label AND target are both URLs:
+//   [https://x.com/](https://x.com/)  and  (https://x.com/)[https://x.com/]
+// Both collapse to a single plain URL (the one inside the parentheses).
+const LINK_URL = "https?:\\/\\/[^\\s\\[\\]()]+";
+const MD_LINK_REGEX = new RegExp(
+  `\\[\\s*${LINK_URL}\\s*\\]\\(\\s*(${LINK_URL})\\s*\\)`,
+  "gi"
+);
+const MD_LINK_REVERSED_REGEX = new RegExp(
+  `\\(\\s*(${LINK_URL})\\s*\\)\\[\\s*${LINK_URL}\\s*\\]`,
+  "gi"
+);
+
 /* ===============================
    HELPERS
 ================================ */
@@ -69,6 +82,15 @@ function sanitizeWord(word, keyword) {
 
   if (word[1] === "_") return word;
   return `${word[0]}_${word.slice(1)}`;
+}
+
+// Keep the original capitalisation: "Review" -> "Check", "REVIEW" -> "CHECK".
+function matchCase(original, replacement) {
+  if (original.length > 1 && original === original.toUpperCase()) return replacement.toUpperCase();
+  if (original[0] !== original[0].toLowerCase()) {
+    return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+  }
+  return replacement;
 }
 
 function formatPhoneNumber(phone) {
@@ -88,6 +110,13 @@ export function sanitizeText(text) {
 
   let sanitized = text;
   let emailRemoved = false;
+
+  /* ===============================
+     COLLAPSE URL-IN-URL MARKDOWN LINKS
+  ================================ */
+  sanitized = sanitized
+    .replace(MD_LINK_REGEX, (_m, url) => url)
+    .replace(MD_LINK_REVERSED_REGEX, (_m, url) => url);
 
   /* ===============================
      EXTRACT URLS
@@ -119,7 +148,7 @@ export function sanitizeText(text) {
   ================================ */
   Object.keys(REPLACEMENTS).forEach((key) => {
     const regex = new RegExp(`\\b${key}\\b`, "gi");
-    sanitized = sanitized.replace(regex, REPLACEMENTS[key]);
+    sanitized = sanitized.replace(regex, (match) => matchCase(match, REPLACEMENTS[key]));
   });
 
   /* ===============================
@@ -133,9 +162,9 @@ export function sanitizeText(text) {
   });
 
   /* ===============================
-     REMOVE UNSAFE SYMBOLS
+     REMOVE UNSAFE SYMBOLS (parentheses and double quotes are intentionally kept)
   ================================ */
-  sanitized = sanitized.replace(/[<>()[\]{}"`;]/g, "");
+  sanitized = sanitized.replace(/[<>[\]{}`;]/g, "");
 
   /* ===============================
      REMOVE DOUBLE ASTERISKS (markdown-style bold markers)
@@ -153,7 +182,8 @@ export function sanitizeText(text) {
      RESTORE URLS
   ================================ */
   urls.forEach((url, index) => {
-    sanitized = sanitized.replace(`__URL_${index}__`, url);
+    // Function replacer: a URL containing "$&" or "$1" must be restored literally.
+    sanitized = sanitized.replace(`__URL_${index}__`, () => url);
   });
 
   return {

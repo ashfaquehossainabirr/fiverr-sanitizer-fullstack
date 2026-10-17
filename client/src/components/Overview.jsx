@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios.js";
 import Loader from "./Loader.jsx";
+import { GoalCard, OfferCalculator } from "./EarningsTools.jsx";
+import { daysUntil, formatDay } from "../lib/dates.js";
+import { formatCompact } from "../lib/formatNumber.js";
 
 function Stat({ label, value, hint }) {
   return (
@@ -12,7 +15,7 @@ function Stat({ label, value, hint }) {
   );
 }
 
-const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+const fmtDate = (d) => formatDay(d);
 
 export default function Overview({ refreshKey, onOpenClients, onError }) {
   const [data, setData] = useState(null);
@@ -21,7 +24,8 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await api.get("/insights");
+        // Send our UTC offset so the server buckets days and the month in our timezone.
+        const res = await api.get("/insights", { params: { tzOffset: new Date().getTimezoneOffset() } });
         if (!cancelled) setData(res.data);
       } catch (err) {
         onError?.(err.response?.data?.message || "Could not load your overview.");
@@ -48,6 +52,8 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
 
   if (!data) return <Loader label="Loading your overview" />;
 
+  // Same rule as the sidebar badge and Today strip: due today or earlier.
+  const dueFollowUps = data.dueFollowUps.filter((c) => daysUntil(c.followUpAt) <= 0);
   const max = Math.max(1, ...data.perDay.map((d) => d.count));
   const delta = data.week.thisWeek - data.week.lastWeek;
 
@@ -62,14 +68,19 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
       </div>
 
       <div className="stat-grid">
-        <Stat label="Messages saved" value={data.totals.messages} hint={`${data.totals.pinned} pinned`} />
+        <Stat label="Messages saved" value={formatCompact(data.totals.messages)} hint={`${formatCompact(data.totals.pinned)} pinned`} />
         <Stat
           label="This week"
-          value={data.week.thisWeek}
-          hint={delta === 0 ? "same as last week" : `${delta > 0 ? "+" : ""}${delta} vs last week`}
+          value={formatCompact(data.week.thisWeek)}
+          hint={delta === 0 ? "same as last week" : `${delta > 0 ? "+" : ""}${formatCompact(delta)} vs last week`}
         />
-        <Stat label="Open orders" value={data.pipeline.openCount} hint={`${data.pipeline.pipelineValue.toLocaleString()} in pipeline`} />
-        <Stat label="Completed value" value={data.pipeline.earned.toLocaleString()} hint="from completed orders" />
+        <Stat label="Open orders" value={formatCompact(data.pipeline.openCount)} hint={`${formatCompact(data.pipeline.pipelineValue)} in pipeline`} />
+        <Stat label="Completed value" value={formatCompact(data.pipeline.earned)} hint="from completed orders" />
+      </div>
+
+      <div className="overview-cols overview-tools">
+        <GoalCard earnedThisMonth={data.pipeline.earnedThisMonth || 0} />
+        <OfferCalculator />
       </div>
 
       <div className="overview-cols">
@@ -90,11 +101,11 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
 
         <section className="overview-card">
           <h3>Follow-ups due</h3>
-          {data.dueFollowUps.length === 0 ? (
+          {dueFollowUps.length === 0 ? (
             <p className="muted">You are all caught up. 🎉</p>
           ) : (
             <ul className="mini-list">
-              {data.dueFollowUps.map((c) => (
+              {dueFollowUps.map((c) => (
                 <li key={c._id}>
                   <button type="button" onClick={onOpenClients}>
                     <strong>{c.name}</strong>
@@ -131,7 +142,7 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
           ) : (
             <ul className="mini-list">
               {data.topTemplates.filter((t) => t.usageCount > 0).map((t) => (
-                <li key={t._id}><div><strong>{t.title}</strong><span>{t.usageCount} uses</span></div></li>
+                <li key={t._id}><div><strong>{t.title}</strong><span>{formatCompact(t.usageCount)} uses</span></div></li>
               ))}
             </ul>
           )}

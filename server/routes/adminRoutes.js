@@ -4,6 +4,7 @@ import Tab from "../models/Tab.js";
 import Message from "../models/Message.js";
 import Template from "../models/Template.js";
 import Client from "../models/Client.js";
+import Task from "../models/Task.js";
 import Settings from "../models/Settings.js";
 import { protect, adminOnly } from "../middleware/auth.js";
 
@@ -105,6 +106,7 @@ router.delete("/users/:id/reject", async (req, res, next) => {
     await Tab.deleteMany({ user: user._id });
     await Template.deleteMany({ user: user._id });
     await Client.deleteMany({ user: user._id });
+    await Task.deleteMany({ user: user._id });
     await User.findByIdAndDelete(user._id);
 
     res.json({ message: `${user.name}'s registration was rejected and permanently removed.` });
@@ -145,7 +147,7 @@ router.put("/users/:id/reset-password", async (req, res, next) => {
   try {
     const { newPassword } = req.body;
 
-    if (!newPassword || newPassword.length < 6) {
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
       return res.status(400).json({ message: "New password must be at least 6 characters." });
     }
 
@@ -180,6 +182,7 @@ router.delete("/users/:id", async (req, res, next) => {
     await Tab.deleteMany({ user: user._id });
     await Template.deleteMany({ user: user._id });
     await Client.deleteMany({ user: user._id });
+    await Task.deleteMany({ user: user._id });
     await User.findByIdAndDelete(user._id);
 
     res.json({ message: "User deleted successfully." });

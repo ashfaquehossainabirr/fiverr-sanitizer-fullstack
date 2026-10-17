@@ -1,3 +1,5 @@
+import { formatDay } from "./dates.js";
+
 // Templates use {{placeholder}} syntax, e.g. "Hi {{client}}, your {{project}} is ready."
 const VAR_REGEX = /\{\{\s*([a-zA-Z][\w ]{0,30}?)\s*\}\}/g;
 
@@ -16,6 +18,26 @@ export function fillTemplate(body, values) {
     const v = values[name.trim()];
     return v && v.trim() ? v : match;
   });
+}
+
+// formatDay resolves the stored value to the calendar day the user picked in any timezone.
+const formatDeadline = (d) => formatDay(d, { month: "long", day: "numeric" });
+
+// Pre-fills well-known placeholders ({{client}}, {{project}}, {{deadline}}) from the
+// client the message is linked to, so most templates need zero typing.
+export function autoFillValues(vars, client) {
+  const out = {};
+  vars.forEach((v) => {
+    const key = v.toLowerCase();
+    let value = "";
+    if (client) {
+      if (["client", "name", "buyer", "customer"].includes(key)) value = client.name || "";
+      else if (["project", "order", "gig"].includes(key)) value = client.project || "";
+      else if (["deadline", "date", "delivery date", "due date"].includes(key)) value = formatDeadline(client.deadline);
+    }
+    out[v] = value;
+  });
+  return out;
 }
 
 export const STARTER_TEMPLATES = [

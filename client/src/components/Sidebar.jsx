@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import ConfirmModal from "./ConfirmModal.jsx";
 
 const VIEWS = [
   { id: "workspace", label: "Workspace", icon: "✎" },
   { id: "overview", label: "Overview", icon: "▤" },
+  { id: "planner", label: "Planner", icon: "✓" },
   { id: "clients", label: "Clients", icon: "☺" },
   { id: "templates", label: "Templates", icon: "❝" },
   { id: "search", label: "Search", icon: "⌕" }
@@ -13,6 +15,7 @@ export default function Sidebar({
   view,
   onChangeView,
   followUpCount = 0,
+  taskCount = 0,
   tabs,
   activeTabId,
   onSelectTab,
@@ -20,8 +23,11 @@ export default function Sidebar({
   onRenameTab,
   onDeleteTab,
   isOpen,
-  onClose
+  onClose,
+  onOpenAccount
 }) {
+  const { user } = useAuth();
+  const renameDone = useRef(false);
   const [creating, setCreating] = useState(false);
   const [newTabName, setNewTabName] = useState("");
   const [menuOpenFor, setMenuOpenFor] = useState(null);
@@ -39,16 +45,40 @@ export default function Sidebar({
     setCreating(false);
   };
 
+  // Close the tab "⋮" menu when clicking elsewhere; Escape closes it (or the mobile drawer).
+  useEffect(() => {
+    const onDown = (e) => {
+      if (!e.target.closest?.(".sidebar-tab-menu-wrap")) setMenuOpenFor(null);
+    };
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      setMenuOpenFor(null);
+      setCreating(false);
+      if (isOpen) onClose();
+    };
+    document.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isOpen, onClose]);
+
   const startRename = (tab) => {
+    renameDone.current = false;
     setRenamingId(tab._id);
     setRenameValue(tab.name);
     setMenuOpenFor(null);
   };
 
+  // Enter submits AND the input then blurs as it unmounts: only rename once.
   const submitRename = (e, tabId) => {
     e.preventDefault();
+    if (renameDone.current) return;
+    renameDone.current = true;
     const name = renameValue.trim();
-    if (name) onRenameTab(tabId, name);
+    const current = tabs.find((t) => t._id === tabId);
+    if (name && name !== current?.name) onRenameTab(tabId, name);
     setRenamingId(null);
   };
 
@@ -78,13 +108,13 @@ export default function Sidebar({
           </button>
         </div>
 
-        <p className="sidebar-section-label">Menu</p>
+        <p className="sidebar-section-label sidebar-menu-label">Menu</p>
         <nav className="sidebar-views" aria-label="Sections">
           {VIEWS.map((v) => (
             <button
               key={v.id}
               type="button"
-              className={`sidebar-view-btn ${view === v.id ? "active" : ""}`}
+              className={`sidebar-view-btn ${view === v.id ? "active" : ""} ${v.id === "search" ? "sidebar-view-search" : ""}`}
               onClick={() => {
                 onChangeView(v.id);
                 onClose();
@@ -94,6 +124,9 @@ export default function Sidebar({
               <span>{v.label}</span>
               {v.id === "clients" && followUpCount > 0 && (
                 <span className="sidebar-badge" title="Follow-ups due">{followUpCount}</span>
+              )}
+              {v.id === "planner" && taskCount > 0 && (
+                <span className="sidebar-badge" title="Tasks due today or overdue">{taskCount}</span>
               )}
             </button>
           ))}
@@ -150,6 +183,13 @@ export default function Sidebar({
                     maxLength={40}
                     onChange={(e) => setRenameValue(e.target.value)}
                     onBlur={(e) => submitRename(e, tab._id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.stopPropagation();
+                        renameDone.current = true;
+                        setRenamingId(null);
+                      }
+                    }}
                   />
                 </form>
               ) : (
@@ -199,6 +239,14 @@ export default function Sidebar({
             </div>
           ))}
         </nav>
+
+        <button type="button" className="sidebar-user" onClick={() => { onOpenAccount?.(); onClose(); }} title="Account settings">
+          <span className="sidebar-user-avatar">{(user?.name || "?").trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")}</span>
+          <span className="sidebar-user-text">
+            <strong>{user?.name || "Account"}</strong>
+            <small>{user?.email}</small>
+          </span>
+        </button>
       </aside>
 
       {tabPendingDelete && (

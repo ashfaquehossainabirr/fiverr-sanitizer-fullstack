@@ -51,6 +51,68 @@ New API: `/api/clients`, `/api/templates`, `/api/insights`, `/api/export`, `/api
 Deleting an account (self-service or by an admin) now also removes that user's templates and clients.
 Preview text is HTML-escaped before highlighting.
 
+## v9.3 — Daily-use features & UI polish
+
+- **Command palette** (Ctrl/Cmd+K): jump to any page or tab, insert a template, toggle dark mode, or search every saved message. Press **?** for all shortcuts.
+- **Template quick-insert** in the editor: placeholders like `{{client}}`, `{{project}}`, `{{deadline}}` auto-fill from the linked client; only unknown ones are asked for.
+- **Paste** button, **Copy & Save** in one click (Ctrl/Cmd+Shift+Enter), and a live character-limit meter.
+- **Saved messages**: *Use again* in the editor, *Pinned* filter, and *Export* a tab to .txt.
+- **Today strip** on the workspace: follow-ups due, overdue, due in 3 days, open orders.
+- **Overview**: monthly earnings goal (stored on your account) with per-day pace, plus a two-way **offer calculator** (fee % is editable).
+- **Toasts** replace alert() popups; **bottom navigation** on phones and tablets; template picker becomes a bottom sheet on phones.
+- Fixes: loading-screen logo shadow in dark mode; closed mobile sidebar no longer leaks a shadow at the left edge.
+
+New/changed API: `PUT /api/users/goal`; clients get `completedAt`; `/api/insights` returns `pipeline.earnedThisMonth`.
+
+## v9.4 — Bug fixes, organization & touch ergonomics
+
+**Fixed**
+- Deadlines/follow-ups no longer shift by a day in some timezones (new `lib/dates.js`); the Today strip, sidebar badge and Overview now use the same "due today or earlier" rule.
+- Sanitizer: a URL containing `$` is restored intact. New warning for phone numbers written with spaces/dashes/brackets (these are not auto-masked).
+- Grammar: "a user / a unique / a one-time" is no longer flagged as a→an; "can you" is only capitalised at the start of a sentence; the "yesterday" tense fix only touches that sentence; advice-only items show *Dismiss* instead of a do-nothing *Apply*.
+- Editor: Read-aloud no longer gets stuck or crashes on browsers without speech support; Translate has a loading state and a *Show English* toggle and ignores stale responses; drafts are stored per account (no leaking between users on a shared browser); a linked client that was completed since is unlinked automatically; Ctrl+S / Ctrl+Enter are ignored while a dialog is open.
+- Expired sessions now return you to sign-in instead of showing a cryptic error.
+- Dialogs close with Escape; destructive dialogs focus *Cancel*; the tab "⋮" menu closes on outside click; renaming a tab sends one request, Escape cancels.
+- "No tabs yet" now has a one-click *Create a General tab* button; saving a message keeps pinned messages on top; starter-template import keeps partial results.
+
+**Improved**
+- Clients: status chips show counts, sort by recent / deadline / follow-up / amount, open-pipeline total.
+- Sidebar account card pinned to the bottom (opens account settings).
+- Touch targets are at least 40px on tablets/phones; filter chips scroll sideways on phones.
+
+## v9.7 — Planner, focus timer & client clocks
+
+- **Planner** (new page, sidebar + phone bottom nav): a to-do list built for freelance days. Quick-add with *Today / Tomorrow / Next week* chips, a date picker, priority (low / normal / high) and an optional client link. Tasks are grouped into **Overdue, Today, Upcoming and No date**, with inline edit, a *Completed* drawer and *Clear completed*. A daily progress bar shows how much of today's list is done.
+- **7-day strip**: see how many tasks and client deadlines/follow-ups land on each day; tap a day to focus the list on it.
+- **Client radar**: deadlines and follow-ups of your open orders for the next 7 days, next to your tasks.
+- **Focus timer** (Pomodoro): 15/3, 25/5 or 50/10 presets, pick the task you are working on, and every finished session is counted on that task. It keeps running while you move between pages (a floating timer pill follows you), survives a refresh, shows the countdown in the browser tab title and plays a soft chime when a session ends.
+- **Client time zones**: set a buyer's time zone on the client form; their card shows the local time there and whether it is a considerate hour to reply.
+- **Today strip** gains a *Tasks due* chip; the sidebar and bottom nav show a badge for tasks due today or overdue.
+- **Shortcuts**: press **N** anywhere to add a task; the command palette can add a task and start/pause the focus timer.
+- **Backup** (`/api/export`) now includes your tasks. Deleting a client keeps its tasks (just unlinked); deleting an account removes its tasks.
+- **Admin button** is an icon-only shield on tablet and phone widths.
+
+New/changed API: `GET/POST /api/tasks`, `PUT/DELETE /api/tasks/:id`, `DELETE /api/tasks/completed/all`; clients get a `timezone` field.
+
+## v12 — Bug-fix pass
+
+**Fixed**
+- Switching tabs quickly could show another tab's saved messages (an older response overwrote the newer one).
+- Copy / Save / Copy & Save could use text up to ~0.4s stale; the preview, counters, copy and save now always use the live text.
+- Sanitizer: `Review` / `Feedback` at the start of a sentence lost their capital (`check`); case is now preserved. Spelling fixes keep a leading capital too (`Teh` becomes `The`).
+- Overview: days, the 14-day chart and "earned this month" were bucketed in server (UTC) time, so work done after midnight local time counted for the wrong day/month. The browser now sends its UTC offset.
+- Search: the "Searching..." spinner could stay on forever after clearing the box; a blocked clipboard no longer throws.
+- Account dialog: Escape or a backdrop click on the log-out confirmation also closed the account dialog behind it. Admin "Reset password" now closes with Escape.
+- The **N** (new task) shortcut no longer fires behind the account dialog.
+- Planner: editing a task linked to a client that was since completed no longer shows "No client".
+- Sessions: a deactivated or un-approved account is signed out on its next request instead of seeing an error on every action; a network blip or server error on load no longer logs you out.
+- Server: malformed ids/dates return 400 instead of 500; non-text login/register/template fields are rejected; `CLIENT_ORIGIN` tolerates a trailing slash.
+- Removed dead email-verification code (`VerifyEmail.jsx`, `sendEmail.js`, `emailTemplates.js`): it imported `nodemailer`, which was never a dependency, and was not wired to any route.
+
+**Responsive**
+- Short screens no longer scroll for no reason on mobile browsers (`100dvh`); the top bar is tighter on very narrow phones (an admin's bar left almost no room for the title); dialogs scroll on short landscape phones.
+- The laptop-only (1025-1439px) hiding of the sidebar Search item is unchanged.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -168,9 +230,10 @@ var, trigger a redeploy on Vercel (env var changes require a rebuild).
 fiverr-sanitizer-fullstack/
 ├── server/
 │   ├── config/db.js          MongoDB connection
-│   ├── models/               User, Tab, Message (Mongoose schemas)
+│   ├── models/               User, Tab, Message, Client, Template, Task, Settings (Mongoose schemas)
 │   ├── middleware/           JWT auth guard (+ admin guard), error handler
-│   ├── routes/                auth, users (settings), tabs (+ nested messages), admin
+│   ├── routes/                auth, users (settings), tabs (+ nested messages), admin,
+│   │                          clients, templates, tasks, insights/export/search
 │   ├── utils/generateToken.js, seedAdmin.js (creates/promotes the first admin)
 │   └── index.js               Express app entry point
 └── client/
@@ -180,7 +243,8 @@ fiverr-sanitizer-fullstack/
         ├── pages/             Login, Register, Dashboard, AdminDashboard
         ├── components/        Sidebar, TopBar, Editor, SavedMessages,
         │                      AccountModal, ProtectedRoute, AdminRoute,
-        │                      ResetPasswordModal
+        │                      ResetPasswordModal, Planner, FocusPill, Clients, ...
+        ├── hooks/             useTasks, useFocusTimer, useNow, useTheme, useEscape
         ├── lib/                original sanitizer/grammar/reserved-keyword
         │                      logic, ported unchanged from the source app
         └── styles/index.css    full design system + responsive layout
@@ -194,3 +258,23 @@ fiverr-sanitizer-fullstack/
   account cascades and deletes all of your tabs and saved messages.
 - The client-side sanitizing/grammar/translation logic is unchanged from
   the original app — only persistence, auth, and the UI shell are new.
+
+## Bug-fix pass
+
+**Server**
+- `.env` is now loaded before any route module runs. Previously "Sign in with Google" always answered *"isn't configured"* when `GOOGLE_CLIENT_ID` came from a `.env` file (it only worked when the host injected real environment variables).
+- The server refuses to start without `JWT_SECRET` instead of failing on the first login.
+- Google sign-in will not log a different Google identity into an account already linked to another one.
+- Unknown `/api/...` paths return 404 (they returned 401 for signed-out callers).
+- Wrong-type input (a number where text is expected, etc.) returns a 400 instead of crashing into a 500.
+- Template usage counts and the settings record are updated atomically.
+
+**Client**
+- Grammar "Apply" no longer produces `Hi John,.` / `Best regards,.`; `??` stays a question mark; `Is` keeps its capital when changed to `Was`.
+- Translating no longer shows a stale translation if the text changes (fix applied, template inserted, Clear, Undo) while it is loading.
+- A template placeholder that was never filled in (`{{client}}`) now shows a compliance warning, because the sanitizer strips the braces and it would be sent as the plain word "client".
+- `{{deadline}}` auto-fill no longer shows the day before for older records in time zones west of UTC.
+- A failed load of the Google sign-in script no longer disables the button until the page is reloaded.
+- Signing in after being sent to `/login` from another page (e.g. `/admin`) returns you there.
+- The loading splash no longer flashes light in dark mode.
+- `npm run lint` works (an `eslint.config.js` was missing).

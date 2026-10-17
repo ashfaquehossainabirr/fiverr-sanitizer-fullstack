@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../api/axios.js";
 import ConfirmModal from "./ConfirmModal.jsx";
 import Loader from "./Loader.jsx";
+import useEscape from "../hooks/useEscape.js";
+import { daysUntil, fromInputDate, toInputDate } from "../lib/dates.js";
+import { ZONES, dayWord, localTimeInfo, zoneLabel } from "../lib/timezones.js";
+import useNow from "../hooks/useNow.js";
+import useDebouncedValue from "../hooks/useDebouncedValue.js";
+import { IconGlobe } from "./icons.jsx";
+import { formatCompact } from "../lib/formatNumber.js";
 
 export const STATUSES = [
   { id: "lead", label: "Lead" },
@@ -12,18 +19,31 @@ export const STATUSES = [
   { id: "archived", label: "Archived" }
 ];
 
-const EMPTY = { name: "", project: "", status: "lead", amount: "", currency: "USD", deadline: "", followUpAt: "", notes: "" };
+const EMPTY = { name: "", project: "", status: "lead", amount: "", currency: "USD", deadline: "", followUpAt: "", notes: "", timezone: "" };
 
-const toInputDate = (d) => (d ? new Date(d).toISOString().slice(0, 10) : "");
+const CLOSED = ["completed", "archived"];
 
 function dueState(date) {
-  if (!date) return null;
-  const days = Math.ceil((new Date(date).setHours(23, 59, 59, 999) - Date.now()) / 86400000);
+  const days = daysUntil(date);
+  if (days === null) return null;
   if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: "danger" };
   if (days === 0) return { text: "today", tone: "warn" };
   if (days <= 2) return { text: `in ${days}d`, tone: "warn" };
   return { text: `in ${days}d`, tone: "ok" };
 }
+
+const SORTS = [
+  { id: "recent", label: "Recently updated" },
+  { id: "deadline", label: "Deadline (soonest)" },
+  { id: "followup", label: "Follow-up (soonest)" },
+  { id: "amount", label: "Amount (highest)" }
+];
+
+// Missing dates sort last.
+const dayKey = (v) => {
+  const d = daysUntil(v);
+  return d === null ? Infinity : d;
+};
 
 export default function Clients({ onError, onChanged }) {
   const [clients, setClients] = useState([]);
@@ -32,7 +52,10 @@ export default function Clients({ onError, onChanged }) {
   const [editingId, setEditingId] = useState(null);
   const [filter, setFilter] = useState("open");
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query);
+  const [sort, setSort] = useState("recent");
   const [pendingDelete, setPendingDelete] = useState(null);
+  const now = useNow(30000);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,13 +89,22 @@ export default function Clients({ onError, onChanged }) {
       currency: c.currency,
       deadline: toInputDate(c.deadline),
       followUpAt: toInputDate(c.followUpAt),
-      notes: c.notes
+      notes: c.notes,
+      timezone: c.timezone || ""
     });
   };
 
+  const closeForm = () => setForm(null);
+  useEscape(closeForm, Boolean(form));
+
   const save = async (e) => {
     e.preventDefault();
-    const payload = { ...form, amount: Number(form.amount) || 0 };
+    const payload = {
+      ...form,
+      amount: Number(form.amount) || 0,
+      deadline: fromInputDate(form.deadline),
+      followUpAt: fromInputDate(form.followUpAt)
+    };
     try {
       if (editingId) {
         const { data } = await api.put(`/clients/${editingId}`, payload);
@@ -124,29 +156,53 @@ export default function Clients({ onError, onChanged }) {
 
   if (loading) return <Loader label="Loading clients" />;
 
-  const visible = clients.filter((c) => {
-    const inFilter =
-      filter === "all" ? true : filter === "open" ? !["completed", "archived"].includes(c.status) : c.status === filter;
-    const q = query.trim().toLowerCase();
-    return inFilter && (!q || `${c.name} ${c.project} ${c.notes}`.toLowerCase().includes(q));
+  const q = debouncedQuery.trim().toLowerCase();
+  const matchesQuery = (c) => !q || `${c.name} ${c.project} ${c.notes}`.toLowerCase().includes(q);
+  const counts = { all: clients.length, open: clients.filter((c) => !CLOSED.includes(c.status)).length };
+  STATUSES.forEach((st) => {
+    counts[st.id] = clients.filter((c) => c.status === st.id).length;
   });
+
+  const sorters = {
+    recent: () => 0, // the server already returns most recently updated first
+    deadline: (a, b) => dayKey(a.deadline) - dayKey(b.deadline),
+    followup: (a, b) => dayKey(a.followUpAt) - dayKey(b.followUpAt),
+    amount: (a, b) => (b.amount || 0) - (a.amount || 0)
+  };
+
+  const visible = clients
+    .filter((c) => (filter === "all" ? true : filter === "open" ? !CLOSED.includes(c.status) : c.status === filter) && matchesQuery(c))
+    .sort(sorters[sort]);
+
+  const pipeline = clients.filter((c) => !CLOSED.includes(c.status)).reduce((sum, c) => sum + (c.amount || 0), 0);
 
   return (
     <div className="panel">
       <div className="panel-head">
         <div>
           <h2>Clients &amp; Orders</h2>
-          <p className="panel-sub">Track every buyer, deadline and follow-up in one place so nothing slips.</p>
+          <p className="panel-sub">
+            Track every buyer, deadline and follow-up in one place so nothing slips.
+            {pipeline > 0 && <> Open pipeline: <strong>{formatCompact(pipeline)}</strong>.</>}
+          </p>
         </div>
         <button type="button" className="btn-primary" onClick={openCreate}>+ Add Client</button>
       </div>
 
       <div className="panel-toolbar">
-        <input className="panel-search" type="search" placeholder="Search clients…" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <div className="toolbar-row">
+          <input className="panel-search" type="search" placeholder="Search clients…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <label className="sort-pick">
+            <span>Sort</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              {SORTS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+          </label>
+        </div>
         <div className="chip-row">
-          {[{ id: "open", label: "Open" }, ...STATUSES, { id: "all", label: "All" }].map((s) => (
-            <button key={s.id} type="button" className={`chip ${filter === s.id ? "chip-active" : ""}`} onClick={() => setFilter(s.id)}>
-              {s.label}
+          {[{ id: "open", label: "Open" }, ...STATUSES, { id: "all", label: "All" }].map((st) => (
+            <button key={st.id} type="button" className={`chip ${filter === st.id ? "chip-active" : ""}`} onClick={() => setFilter(st.id)}>
+              {st.label} <span className="chip-count">{counts[st.id] ?? 0}</span>
             </button>
           ))}
         </div>
@@ -179,12 +235,25 @@ export default function Clients({ onError, onChanged }) {
                 </header>
 
                 <div className="meta-row">
-                  {c.amount > 0 && <span className="badge">{c.currency} {c.amount.toLocaleString()}</span>}
+                  {c.amount > 0 && <span className="badge">{c.currency} {formatCompact(c.amount)}</span>}
                   {due && c.deadline && !["completed", "archived"].includes(c.status) && (
                     <span className={`badge badge-${due.tone}`}>Deadline {due.text}</span>
                   )}
                   {follow && <span className={`badge badge-${follow.tone}`}>Follow up {follow.text}</span>}
                 </div>
+
+                {(() => {
+                  const t = localTimeInfo(c.timezone, now);
+                  if (!t) return null;
+                  return (
+                    <p className={`client-clock ${t.awake ? "is-awake" : "is-asleep"}`} title={t.awake ? "A considerate hour to message" : "Probably outside their working hours"}>
+                      <IconGlobe size={14} />
+                      <strong>{t.time}</strong>
+                      <span>{dayWord(t.dayDiff) ? `${dayWord(t.dayDiff)} · ` : ""}{zoneLabel(c.timezone)}</span>
+                      <em>{t.awake ? "Good time to reply" : "Likely offline"}</em>
+                    </p>
+                  );
+                })()}
 
                 {c.notes && <p className="item-body">{c.notes}</p>}
 
@@ -233,6 +302,13 @@ export default function Clients({ onError, onChanged }) {
                 <input type="date" value={form.followUpAt} onChange={(e) => setForm({ ...form, followUpAt: e.target.value })} />
               </label>
             </div>
+            <label>Their time zone
+              <select value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })}>
+                <option value="">Not set</option>
+                {form.timezone && !ZONES.some(([id]) => id === form.timezone) && <option value={form.timezone}>{zoneLabel(form.timezone)}</option>}
+                {ZONES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              </select>
+            </label>
             <label>Notes
               <textarea rows={3} maxLength={2000} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </label>

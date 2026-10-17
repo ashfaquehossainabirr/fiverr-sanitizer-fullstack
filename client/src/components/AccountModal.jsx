@@ -1,3 +1,4 @@
+import useEscape from "../hooks/useEscape.js";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import ConfirmModal from "./ConfirmModal.jsx";
@@ -27,6 +28,9 @@ export default function AccountModal({ onClose }) {
   const [deleting, setDeleting] = useState(false);
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // While the log-out confirmation is open, Escape closes only that dialog.
+  useEscape(onClose, !showLogoutConfirm && !deleting);
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -109,6 +113,7 @@ export default function AccountModal({ onClose }) {
   };
 
   return (
+    <>
     <div
       className={`modal-backdrop${isExpanded ? " modal-backdrop-expanded" : ""}`}
       onClick={onClose}
@@ -279,18 +284,19 @@ export default function AccountModal({ onClose }) {
           </button>
         </div>
       </div>
-
-      {showLogoutConfirm && (
-        <ConfirmModal
-          title="Log out of your account?"
-          message="You'll need to sign back in to access your tabs and saved messages."
-          confirmLabel="Log Out"
-          cancelLabel="Stay Logged In"
-          variant="danger"
-          onConfirm={logout}
-          onCancel={() => setShowLogoutConfirm(false)}
-        />
-      )}
     </div>
+
+    {showLogoutConfirm && (
+      <ConfirmModal
+        title="Log out of your account?"
+        message="You'll need to sign back in to access your tabs and saved messages."
+        confirmLabel="Log Out"
+        cancelLabel="Stay Logged In"
+        variant="danger"
+        onConfirm={logout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
+    )}
+    </>
   );
 }

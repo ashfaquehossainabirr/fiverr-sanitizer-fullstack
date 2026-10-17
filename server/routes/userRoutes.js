@@ -4,6 +4,7 @@ import Tab from "../models/Tab.js";
 import Message from "../models/Message.js";
 import Template from "../models/Template.js";
 import Client from "../models/Client.js";
+import Task from "../models/Task.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -16,6 +17,10 @@ router.put("/profile", async (req, res, next) => {
 
     if (!name && !email) {
       return res.status(400).json({ message: "Provide a name or email to update." });
+    }
+
+    if ((name !== undefined && typeof name !== "string") || (email !== undefined && typeof email !== "string")) {
+      return res.status(400).json({ message: "Name and email must be text." });
     }
 
     if (name && name.trim().length < 2) {
@@ -46,6 +51,21 @@ router.put("/profile", async (req, res, next) => {
   }
 });
 
+/* PUT /api/users/goal - set the monthly earnings goal (0 clears it) */
+router.put("/goal", async (req, res, next) => {
+  try {
+    const goal = Number(req.body.monthlyGoal);
+    if (!Number.isFinite(goal) || goal < 0 || goal > 100000000) {
+      return res.status(400).json({ message: "Enter a goal between 0 and 100,000,000." });
+    }
+    req.user.monthlyGoal = Math.round(goal);
+    await req.user.save();
+    res.json({ user: req.user.toSafeObject() });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* PUT /api/users/password - set or change password
    Accounts with no password yet (e.g. Google sign-ups that never set one)
    can set their first password with just newPassword - no currentPassword
@@ -55,7 +75,7 @@ router.put("/password", async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!newPassword) {
+    if (!newPassword || typeof newPassword !== "string") {
       return res.status(400).json({ message: "New password is required." });
     }
 
@@ -67,7 +87,7 @@ router.put("/password", async (req, res, next) => {
     const isSettingFirstPassword = !userWithPassword.password;
 
     if (!isSettingFirstPassword) {
-      if (!currentPassword) {
+      if (!currentPassword || typeof currentPassword !== "string") {
         return res.status(400).json({ message: "Current password is required." });
       }
       const isMatch = await userWithPassword.comparePassword(currentPassword);
@@ -101,7 +121,7 @@ router.delete("/account", async (req, res, next) => {
     const userWithPassword = await User.findById(req.user._id).select("+password");
 
     if (userWithPassword.password) {
-      if (!password) {
+      if (!password || typeof password !== "string") {
         return res.status(400).json({ message: "Enter your password to confirm account deletion." });
       }
       const isMatch = await userWithPassword.comparePassword(password);
@@ -115,6 +135,7 @@ router.delete("/account", async (req, res, next) => {
     await Tab.deleteMany({ user: req.user._id });
     await Template.deleteMany({ user: req.user._id });
     await Client.deleteMany({ user: req.user._id });
+    await Task.deleteMany({ user: req.user._id });
     await User.findByIdAndDelete(req.user._id);
 
     res.json({ message: "Account deleted successfully." });

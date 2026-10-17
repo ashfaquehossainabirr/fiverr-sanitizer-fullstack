@@ -14,7 +14,12 @@ const clientSchema = new mongoose.Schema(
     currency: { type: String, trim: true, maxlength: 4, default: "USD" },
     deadline: { type: Date, default: null },
     followUpAt: { type: Date, default: null },
-    notes: { type: String, maxlength: 2000, default: "" }
+    notes: { type: String, maxlength: 2000, default: "" },
+    // IANA zone like "Europe/London"; lets the UI show the buyer's local time.
+    timezone: { type: String, trim: true, maxlength: 64, default: "" },
+    // Set automatically the moment an order moves to "completed"; powers the
+    // "earned this month" figure and the monthly goal on the Overview.
+    completedAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

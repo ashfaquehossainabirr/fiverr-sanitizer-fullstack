@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios.js";
 import ConfirmModal from "./ConfirmModal.jsx";
 import Loader from "./Loader.jsx";
+import useEscape from "../hooks/useEscape.js";
+import useDebouncedValue from "../hooks/useDebouncedValue.js";
 import { extractVariables, fillTemplate, STARTER_TEMPLATES } from "../lib/templateVars.js";
+import { formatCompact } from "../lib/formatNumber.js";
 
 const EMPTY = { title: "", category: "General", body: "" };
 
@@ -15,6 +18,11 @@ export default function Templates({ onUseTemplate, onError }) {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query);
+  useEscape(() => {
+    setForm(null);
+    setFilling(null);
+  }, Boolean(form || filling));
 
   useEffect(() => {
     let cancelled = false;
@@ -38,7 +46,7 @@ export default function Templates({ onUseTemplate, onError }) {
   const visible = templates.filter(
     (t) =>
       (category === "All" || t.category === category) &&
-      (!query.trim() || `${t.title} ${t.body}`.toLowerCase().includes(query.trim().toLowerCase()))
+      (!debouncedQuery.trim() || `${t.title} ${t.body}`.toLowerCase().includes(debouncedQuery.trim().toLowerCase()))
   );
 
   const openCreate = () => {
@@ -68,15 +76,17 @@ export default function Templates({ onUseTemplate, onError }) {
   };
 
   const addStarters = async () => {
+    const created = [];
     try {
-      const created = [];
       for (const t of STARTER_TEMPLATES) {
         const { data } = await api.post("/templates", t);
         created.push(data.template);
       }
-      setTemplates((prev) => [...created, ...prev]);
     } catch (err) {
       onError?.(err.response?.data?.message || "Could not add starter templates.");
+    } finally {
+      // Show whatever was created, even if a later request failed.
+      if (created.length) setTemplates((prev) => [...created, ...prev]);
     }
   };
 
@@ -164,7 +174,7 @@ export default function Templates({ onUseTemplate, onError }) {
               </header>
               <p className="item-body">{t.body}</p>
               <footer>
-                <span className="muted">Used {t.usageCount}×</span>
+                <span className="muted">Used {formatCompact(t.usageCount)}×</span>
                 <div className="item-actions">
                   <button type="button" onClick={() => startUse(t)}>Use</button>
                   <button type="button" onClick={() => openEdit(t)}>Edit</button>
