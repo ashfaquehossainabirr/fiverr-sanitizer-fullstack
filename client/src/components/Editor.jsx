@@ -11,7 +11,7 @@ import { MOD } from "../lib/platform.js";
 
 const URL_REGEX = /\bhttps?:\/\/[^\s]+/gi;
 const CHAR_LIMIT = 2500;
-const TALL_INPUT_THRESHOLD = 750;
+const TALL_INPUT_THRESHOLD = 320;
 // Drafts are stored per account so a shared browser never shows one user's text to the next.
 const draftKeyFor = (user) => `sanitizer_draft_${user?.id || user?._id || "anon"}`;
 const SPEECH_SUPPORTED =
@@ -185,7 +185,7 @@ export default function Editor({
   const isLimitExceeded = charCount > CHAR_LIMIT;
   const matchPreviewHeight = charCount > TALL_INPUT_THRESHOLD;
 
-  /* Past 750 characters the input's minimum height follows the sanitized
+  /* Past 320 characters the input's minimum height follows the sanitized
      preview box so both columns stay the same size. */
   useEffect(() => {
     const node = previewRef.current;
