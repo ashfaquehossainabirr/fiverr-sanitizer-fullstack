@@ -5400,11 +5400,9 @@ kbd {
     bottom: 0;
     z-index: 25;
     display: grid;
-    /* one equal column per item, whatever the item count (was a fixed 6 columns, which left a gap) */
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 2px;
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     background: color-mix(in srgb, var(--color-surface) 94%, transparent);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
@@ -7821,8 +7819,8 @@ kbd {
 .notes {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  max-width: 1240px;
+  gap: 18px;
+  max-width: 1180px;
   width: 100%;
 }
 
@@ -7844,17 +7842,15 @@ kbd {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 14px;
+  padding: 0 12px;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-ink-faint);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .notes-search:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent);
 }
 
 .notes-search input {
@@ -7881,85 +7877,44 @@ kbd {
   cursor: default;
 }
 
-/* Composer: one card — writing area on top, a quiet footer with the shortcut hint and the action */
 .notes-composer {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.notes-composer:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 16%, transparent), var(--shadow-sm);
 }
 
 .notes-composer textarea {
-  display: block;
-  width: 100%;
-  min-height: 92px;
-  max-height: 260px;
-  padding: 16px 18px 10px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+  min-height: 52px;
+  max-height: 220px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
-  font-size: 15px;
-  line-height: 1.6;
-  resize: vertical;
-}
-
-.notes-composer textarea::placeholder {
-  color: var(--color-ink-faint);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .notes-composer textarea:focus {
   outline: none;
-}
-
-.notes-composer-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px 10px 18px;
-  border-top: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface-alt) 60%, var(--color-surface));
-}
-
-.notes-composer-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--color-ink-faint);
-}
-
-.notes-composer-hint kbd {
-  padding: 2px 6px;
-  border: 1px solid var(--color-border-strong);
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  background: var(--color-surface);
-  color: var(--color-ink-soft);
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  line-height: 1.2;
+  border-color: var(--color-accent);
 }
 
 .notes-composer .btn-primary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
   flex-shrink: 0;
-  min-height: 40px;
-  margin-left: auto;
+  min-height: 42px;
 }
 
 .notes-composer .btn-primary:disabled {
@@ -7967,91 +7922,56 @@ kbd {
   cursor: default;
 }
 
-/* Cards: equal-height rows, colour stripe on top, footer pinned to the bottom */
 .notes-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
-  gap: 16px;
-  align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+  align-items: start;
 }
 
 .note-card {
-  --note-tint: var(--color-surface);
-  --note-stripe: var(--color-border-strong);
-  position: relative;
+  --note-tint: transparent;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  padding: 20px 16px 12px;
-  overflow: hidden;
+  gap: 8px;
+  padding: 12px 12px 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--note-tint) 9%, var(--color-surface));
+  background: color-mix(in srgb, var(--note-tint) 11%, var(--color-surface));
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.note-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--note-stripe);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .note-card:focus-within,
 .note-card:hover {
-  border-color: color-mix(in srgb, var(--note-stripe) 55%, var(--color-border-strong));
+  border-color: var(--color-border-strong);
   box-shadow: var(--shadow-md);
 }
 
-.note-card:hover {
-  transform: translateY(-2px);
-}
-
-.note-card.note-green { --note-tint: var(--color-accent); --note-stripe: var(--color-accent); }
-.note-card.note-blue { --note-tint: var(--color-info); --note-stripe: var(--color-info); }
-.note-card.note-amber { --note-tint: var(--color-warn); --note-stripe: var(--color-warn); }
-.note-card.note-rose { --note-tint: var(--color-danger); --note-stripe: var(--color-danger); }
+.note-card.note-green { --note-tint: var(--color-accent); }
+.note-card.note-blue { --note-tint: var(--color-info); }
+.note-card.note-amber { --note-tint: var(--color-warn); }
+.note-card.note-rose { --note-tint: var(--color-danger); }
 
 .note-card.is-pinned {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
-}
-
-.note-pin-tag {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px 3px 7px;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-dark);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  border-color: var(--color-accent);
 }
 
 .note-card textarea {
-  flex: 1 1 auto;
   width: 100%;
-  min-height: 84px;
+  min-height: 72px;
   max-height: 420px;
-  padding: 0;
+  padding: 2px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--color-ink);
   font: inherit;
-  font-size: 14.5px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
   resize: none;
   overflow-y: auto;
 }
@@ -8060,26 +7980,16 @@ kbd {
   outline: none;
 }
 
-.note-meta {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-ink-faint);
-}
-
 .note-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--color-border-strong) 70%, transparent);
 }
 
 .note-colors {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .note-dot {
@@ -8091,11 +8001,6 @@ kbd {
   background: var(--color-surface-alt);
   box-shadow: inset 0 0 0 1px var(--color-border-strong);
   cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.note-dot:hover {
-  transform: scale(1.12);
 }
 
 .note-dot.dot-green { background: var(--color-accent); box-shadow: none; }
@@ -8110,7 +8015,7 @@ kbd {
 
 .note-actions {
   display: flex;
-  gap: 2px;
+  gap: 4px;
 }
 
 .note-act {
@@ -8136,13 +8041,11 @@ kbd {
   border-color: var(--color-danger);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .note-card,
-  .note-card:hover,
-  .note-dot:hover {
-    transform: none;
-    transition: none;
-  }
+.note-meta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink-faint);
 }
 
 /* ---------- Responsive ---------- */
@@ -8158,36 +8061,20 @@ kbd {
     width: 100%;
   }
 
-  .notes-composer-hint {
-    display: none;
-  }
-
-  .notes-composer-foot {
-    padding: 10px 12px;
+  .notes-composer {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .notes-composer .btn-primary {
-    flex: 1;
+    justify-content: center;
     min-height: 44px;
-  }
-
-  .notes-composer textarea {
-    min-height: 100px;
-    font-size: 16px; /* stops iOS zooming into the field */
-  }
-
-  .notes-grid {
-    gap: 14px;
   }
 }
 
 @media (max-width: 520px) {
   .notes-grid {
     grid-template-columns: 1fr;
-  }
-
-  .note-card textarea {
-    font-size: 16px;
   }
 
   .notes-export span {
@@ -8232,17 +8119,555 @@ kbd {
   }
 }
 
-/* Six bottom-nav items: tighten labels on narrow phones so none get clipped */
-@media (max-width: 860px) {
-  .bottom-nav-btn {
-    min-width: 0;
-    font-size: 10.5px;
+/* ==========================================================================
+   v13.7: UI polish pass
+   ========================================================================== */
+
+/* Buttons that carry an icon */
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* Sidebar: the menu now uses the same SVG icon set as the rest of the app */
+.sidebar-view-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  font-size: 0;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.sidebar-view-btn:hover .sidebar-view-icon,
+.sidebar-view-btn.active .sidebar-view-icon {
+  opacity: 1;
+}
+
+.sidebar-view-btn.active .sidebar-view-icon {
+  color: #6EE7B7;
+}
+
+/* Cards: one consistent lift on hover, and room to breathe */
+.item-card {
+  padding: 18px 20px;
+}
+
+.item-card footer {
+  gap: 8px 12px;
+}
+
+.item-actions-remind {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  /* Stack the footer: reminders on top, Edit/Delete underneath, both easy to tap */
+  .item-card footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item-card footer .item-actions-remind {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .item-card footer .item-actions:not(.item-actions-remind) {
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .item-actions button {
+    min-height: 36px;
+    padding-inline: 12px;
   }
 }
 
-@media (max-width: 380px) {
+/* Keyboard focus is always visible and uses the brand colour */
+.sidebar-view-btn:focus-visible,
+.bottom-nav-btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.item-actions button:focus-visible,
+.icon-btn:focus-visible,
+.note-dot:focus-visible,
+.routine-check:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   v13.8: Overview stat cards, 14-day chart and sentence-case labels
+   ========================================================================== */
+
+/* ---------- Stat cards ---------- */
+.stat-card {
+  --tone: var(--color-accent);
+  position: relative;
+  gap: 10px;
+  padding: 16px 18px 15px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 7%, var(--color-surface)) 0%, var(--color-surface) 62%);
+  overflow: hidden;
+}
+
+.stat-card.tone-blue { --tone: var(--color-info); }
+.stat-card.tone-amber { --tone: var(--color-warn); }
+
+.stat-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tone) 16%, var(--color-surface));
+  color: var(--tone);
+}
+
+.stat-card .stat-label {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink-soft);
+  min-width: 0;
+}
+
+.stat-card .stat-value {
+  font-size: 34px;
+  letter-spacing: -0.02em;
+}
+
+.stat-card .stat-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-surface-alt);
+  color: var(--color-ink-soft);
+}
+
+.stat-trend svg {
+  transform: rotate(0deg);
+}
+
+.stat-trend.up {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
+}
+
+.stat-trend.up svg {
+  transform: rotate(-45deg);
+}
+
+.stat-trend.down {
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+}
+
+.stat-trend.down svg {
+  transform: rotate(45deg);
+}
+
+/* ---------- 14-day chart ---------- */
+.chart14-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.chart14-head h3 {
+  margin: 0;
+}
+
+.chart14-total {
+  font-size: 12.5px;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
+.chart14-total strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-ink);
+}
+
+.chart14 {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 168px;
+  margin-top: 8px;
+}
+
+.chart14-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart14-val {
+  height: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 14px;
+  color: var(--color-ink-soft);
+}
+
+.chart14-track {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(to top, transparent 0, transparent calc(25% - 1px), color-mix(in srgb, var(--color-border) 70%, transparent) calc(25% - 1px), color-mix(in srgb, var(--color-border) 70%, transparent) 25%),
+    var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.chart14-bar {
+  width: 100%;
+  border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 80%, #fff) 0%, color-mix(in srgb, var(--color-accent) 60%, var(--color-surface-alt)) 100%);
+  transition: height 0.3s ease, filter 0.15s ease;
+}
+
+.chart14-col:hover .chart14-bar {
+  filter: brightness(0.95) saturate(1.1);
+}
+
+.chart14-col.is-empty .chart14-bar {
+  background: var(--color-border-strong);
+  opacity: 0.55;
+}
+
+.chart14-col.is-today .chart14-bar {
+  background: var(--color-accent);
+}
+
+.chart14-col.is-today .chart14-val,
+.chart14-col.is-today .chart14-day {
+  color: var(--color-accent-dark);
+  font-weight: 700;
+}
+
+.chart14-day {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+}
+
+@media (max-width: 520px) {
+  .chart14 {
+    gap: 3px;
+    height: 150px;
+  }
+
+  .chart14-val {
+    font-size: 9px;
+  }
+
+  .chart14-track {
+    border-radius: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 30px;
+  }
+}
+
+/* ---------- Sentence-case labels ----------
+   The tracked-out all-caps labels read as shouting in a dense dashboard. They keep their
+   hierarchy through size and weight instead. */
+.sidebar-section-label,
+.today-date,
+.palette-group,
+.shortcuts-group h4,
+.week-dow,
+.task-section h3,
+.task-done-toggle,
+.focus-ring-text span,
+.preview-header label,
+.settings-section h3,
+.warning-box h3,
+.grammar-box h3 {
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.sidebar-section-label,
+.palette-group,
+.shortcuts-group h4 {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.today-date {
+  font-size: 12.5px;
+}
+
+.task-section h3,
+.task-done-toggle {
+  font-size: 13.5px;
+}
+
+.week-dow {
+  font-size: 12px;
+}
+
+.focus-ring-text span {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.chart14-head {
+  align-items: center;
+  min-height: 24px;
+}
+
+@media (max-width: 520px) {
+  .stat-card {
+    padding: 14px 14px 13px;
+    gap: 8px;
+  }
+
+  .stat-top {
+    gap: 8px;
+  }
+
+  .stat-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 12.5px;
+    line-height: 1.25;
+  }
+}
+
+/* ==========================================================================
+   v13.9: nothing may make the page wider than the screen
+   A long unbroken link or name used to stretch the page sideways, which left the fixed
+   bottom bar covering only part of it (bunched to the left with empty space on the right).
+   ========================================================================== */
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.dashboard-main > *,
+.planner-grid > *,
+.planner-main,
+.planner-aside,
+.task-row,
+.task-main,
+.saved-messages-list,
+.saved-message,
+.item-card,
+.item-card > *,
+.overview-card,
+.note-card {
+  min-width: 0;
+}
+
+.task-main,
+.task-text,
+.saved-message-text,
+.item-card h3,
+.item-card p,
+.item-body,
+.note-card textarea,
+.mini-list li,
+.routine-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* The bottom bar always spans the full width of the screen and shares it evenly */
+@media (max-width: 860px) {
+  .bottom-nav {
+    left: 0;
+    right: 0;
+    width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .bottom-nav-btn {
-    font-size: 9.5px;
-    padding-inline: 0;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .bottom-nav-btn > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* A long task name must not widen the focus timer card (the "Working on" picker sizes itself
+   to its longest option by default). */
+.planner-aside > *,
+.planner-card,
+.focus-body,
+.focus-side,
+.focus-task {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.focus-task select,
+.focus-card select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   v13.10: bug fixes
+   ========================================================================== */
+
+/* A dialog taller than the screen used to be centred with its top cut off and unreachable
+   (the shortcuts list on small phones and in landscape). Auto margins centre it when it fits
+   and let it start at the top and scroll when it doesn't. */
+.confirm-backdrop,
+.modal-backdrop,
+.view-message-backdrop {
+  align-items: flex-start;
+}
+
+.confirm-backdrop > *,
+.modal-backdrop > *,
+.view-message-backdrop > * {
+  margin-block: auto;
+}
+
+/* Touch targets: keep the look, grow the tappable area to a comfortable size */
+@media (max-width: 860px), (pointer: coarse) {
+  .planner-seg button {
+    min-height: 32px;
+    padding: 6px 14px;
+  }
+
+  .planner-seg-sm button {
+    min-height: 30px;
+    padding: 5px 12px;
+  }
+
+  .task-check {
+    position: relative;
+  }
+
+  .task-check::after {
+    content: "";
+    position: absolute;
+    inset: -10px;
+  }
+
+  .task-done-toggle {
+    min-height: 40px;
+  }
+
+  .status-select,
+  .item-card header .status-select {
+    min-height: 36px;
+  }
+}
+
+/* Login / Register on small screens: the floating theme button sat on top of the card's
+   corner, so leave it its own strip above the card. Tablets get a roomier card. */
+@media (max-width: 560px) {
+  .auth-screen {
+    padding: 68px 16px 24px;
+    align-items: flex-start;
+  }
+
+  .auth-panel {
+    padding: 28px 20px;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 860px) {
+  .auth-shell {
+    max-width: 540px;
+  }
+
+  .auth-panel {
+    padding: 44px 42px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .auth-screen {
+    padding-top: 64px;
+    align-items: flex-start;
+  }
+}
+
+/* Phones and small tablets held sideways: the 68px top bar plus the tall bottom bar used up about a
+   third of the screen. Slim both so the content gets the room. */
+@media (max-width: 960px) and (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --topbar-height: 52px;
+  }
+
+  .bottom-nav {
+    padding-top: 4px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav-btn {
+    flex-direction: row;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+
+  .bottom-nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dashboard-content {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
 }

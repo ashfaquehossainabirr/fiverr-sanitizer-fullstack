@@ -1,12 +1,11 @@
-import { IconEdit, IconChart, IconUsers, IconQuote, IconCalendar, IconNote } from "./icons.jsx";
+import { IconEdit, IconChart, IconUsers, IconQuote, IconCalendar } from "./icons.jsx";
 
 const ITEMS = [
   { id: "workspace", label: "Write", Icon: IconEdit },
   { id: "overview", label: "Overview", Icon: IconChart },
   { id: "clients", label: "Clients", Icon: IconUsers },
   { id: "planner", label: "Planner", Icon: IconCalendar },
-  { id: "templates", label: "Templates", Icon: IconQuote },
-  // { id: "notes", label: "Notes", Icon: IconNote }
+  { id: "templates", label: "Templates", Icon: IconQuote }
 ];
 
 // Thumb-friendly navigation for phones and small tablets (hidden on desktop,

@@ -113,13 +113,22 @@ New/changed API: `GET/POST /api/tasks`, `PUT/DELETE /api/tasks/:id`, `DELETE /ap
 - Short screens no longer scroll for no reason on mobile browsers (`100dvh`); the top bar is tighter on very narrow phones (an admin's bar left almost no room for the title); dialogs scroll on short landscape phones.
 - The laptop-only (1025-1439px) hiding of the sidebar Search item is unchanged.
 
-## v13.7: Focus modal, progress and notes
+## v13.10: Focus modal, progress and notes
 
 - **Focus timer modal**: the floating timer pill opens a centred dialog (on desktop, tablet and phone) with the live timer and a *Go to Planner* button. Break time uses a darker blue ring and button in dark mode.
 - **Focus progress** (Planner): an adjustable daily session goal, a streak of focus days and a 7-day minutes chart, built from your finished sessions.
 - **Daily routine** (Planner): a checklist of habits you repeat every day. It resets each morning; *Add a starter routine* gives you five to begin with.
-- **Notes** (sidebar, phone bottom nav, command palette): quick colour-coded notes with search, pin, copy and a .txt export.
-- Focus history, routine and notes are stored in the browser per account (no API changes). The Planner side column no longer sticks, since it now holds several cards. The phone bottom nav has a sixth item (Notes).
+- **Notes** (command palette: Ctrl/Cmd+K, then "Notes" or "New note"): quick colour-coded notes with search, pin, copy and a .txt export.
+- **UI polish**: the sidebar menu uses the same SVG icons as the rest of the app, header buttons use icons instead of text glyphs, client/template card footers are tidier on phones, and keyboard focus is clearly visible.
+- **Overview**: stat cards now have icons, a soft tint and a trend arrow for the weekly count; the 14-day chart shows counts, weekday initials, gridlines and a highlighted today bar. Small all-caps labels (sidebar sections, dates, planner sections, palette groups) are now sentence case.
+- **Bottom bar fix**: long unbroken text (links in saved messages, long task or client names, a long task in the focus timer picker) could stretch the page sideways, leaving the phone/tablet bottom bar bunched to the left with empty space on the right. Text now wraps, the page can no longer scroll sideways, and the bar always shares the full width evenly.
+- **Bug and layout fixes (v13.10)**:
+  - Tall dialogs (like the shortcuts list) could be cut off at the top on small phones and in landscape; they now start at the top and scroll.
+  - Small tap targets on touch screens (planner segmented controls, task checkbox, "Show done" toggle, client status picker) are now comfortably sized.
+  - Login and Register: the theme button no longer overlaps the card on small phones; the card is roomier on tablets.
+  - Landscape phones: slimmer top bar and a compact bottom bar so content gets more room.
+  - The floating focus pill's screen-reader label now says it opens the focus timer.
+- Focus history, routine and notes are stored in the browser per account (no API changes). The Planner side column no longer sticks, since it now holds several cards.
 
 ## Prerequisites
 

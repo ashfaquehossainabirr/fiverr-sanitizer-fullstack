@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import ConfirmModal from "./ConfirmModal.jsx";
+import { IconCalendar, IconChart, IconEdit, IconQuote, IconSearch, IconUsers } from "./icons.jsx";
 
 const VIEWS = [
-  { id: "workspace", label: "Workspace", icon: "✎" },
-  { id: "overview", label: "Overview", icon: "▤" },
-  { id: "planner", label: "Planner", icon: "✓" },
-  { id: "clients", label: "Clients", icon: "☺" },
-  { id: "templates", label: "Templates", icon: "❝" },
-  { id: "notes", label: "Notes", icon: "✐" },
-  // { id: "search", label: "Search", icon: "⌕" }
+  { id: "workspace", label: "Workspace", Icon: IconEdit },
+  { id: "overview", label: "Overview", Icon: IconChart },
+  { id: "planner", label: "Planner", Icon: IconCalendar },
+  { id: "clients", label: "Clients", Icon: IconUsers },
+  { id: "templates", label: "Templates", Icon: IconQuote },
+  { id: "search", label: "Search", Icon: IconSearch }
 ];
 
 export default function Sidebar({
@@ -121,7 +121,7 @@ export default function Sidebar({
                 onClose();
               }}
             >
-              <span className="sidebar-view-icon" aria-hidden="true">{v.icon}</span>
+              <span className="sidebar-view-icon" aria-hidden="true"><v.Icon size={17} /></span>
               <span>{v.label}</span>
               {v.id === "clients" && followUpCount > 0 && (
                 <span className="sidebar-badge" title="Follow-ups due">{followUpCount}</span>

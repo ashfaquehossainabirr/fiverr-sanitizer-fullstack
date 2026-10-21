@@ -8,6 +8,7 @@ const GROUPS = [
       [[MOD, "K"], "Open the command palette"],
       [["?"], "Show this list"],
       [["N"], "Add a task in the Planner"],
+      [["Shift", "N"], "Go to Notes"],
       [["Esc"], "Close dialogs and menus"]
     ]
   },
