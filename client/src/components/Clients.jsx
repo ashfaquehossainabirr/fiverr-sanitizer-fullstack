@@ -7,7 +7,7 @@ import { daysUntil, fromInputDate, toInputDate } from "../lib/dates.js";
 import { ZONES, dayWord, localTimeInfo, zoneLabel } from "../lib/timezones.js";
 import useNow from "../hooks/useNow.js";
 import useDebouncedValue from "../hooks/useDebouncedValue.js";
-import { IconGlobe, IconPlus } from "./icons.jsx";
+import { IconGlobe } from "./icons.jsx";
 import { formatCompact } from "../lib/formatNumber.js";
 
 export const STATUSES = [
@@ -186,9 +186,7 @@ export default function Clients({ onError, onChanged }) {
             {pipeline > 0 && <> Open pipeline: <strong>{formatCompact(pipeline)}</strong>.</>}
           </p>
         </div>
-        <button type="button" className="btn-primary btn-with-icon" onClick={openCreate}>
-          <IconPlus size={15} /> Add client
-        </button>
+        <button type="button" className="btn-primary" onClick={openCreate}>+ Add Client</button>
       </div>
 
       <div className="panel-toolbar">

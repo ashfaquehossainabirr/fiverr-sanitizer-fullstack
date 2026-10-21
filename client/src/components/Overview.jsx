@@ -1,31 +1,16 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios.js";
-import { IconArrow, IconBolt, IconCheck, IconDownload, IconSave, IconUsers } from "./icons.jsx";
 import Loader from "./Loader.jsx";
 import { GoalCard, OfferCalculator } from "./EarningsTools.jsx";
 import { daysUntil, formatDay } from "../lib/dates.js";
 import { formatCompact } from "../lib/formatNumber.js";
 
-function Stat({ label, value, hint, Icon, tone = "green", trend }) {
+function Stat({ label, value, hint }) {
   return (
-    <div className={`stat-card tone-${tone}`}>
-      <div className="stat-top">
-        <span className="stat-icon" aria-hidden="true">
-          <Icon size={16} />
-        </span>
-        <span className="stat-label">{label}</span>
-      </div>
+    <div className="stat-card">
+      <span className="stat-label">{label}</span>
       <strong className="stat-value">{value}</strong>
-      {hint && (
-        <span className="stat-hint">
-          {trend && (
-            <span className={`stat-trend ${trend}`} aria-hidden="true">
-              <IconArrow size={12} />
-            </span>
-          )}
-          {hint}
-        </span>
-      )}
+      {hint && <span className="stat-hint">{hint}</span>}
     </div>
   );
 }
@@ -71,7 +56,6 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
   const dueFollowUps = data.dueFollowUps.filter((c) => daysUntil(c.followUpAt) <= 0);
   const max = Math.max(1, ...data.perDay.map((d) => d.count));
   const delta = data.week.thisWeek - data.week.lastWeek;
-  const totalMessages = data.perDay.reduce((sum, d) => sum + d.count, 0);
 
   return (
     <div className="panel">
@@ -80,23 +64,18 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
           <h2>Overview</h2>
           <p className="panel-sub">Your week at a glance.</p>
         </div>
-        <button type="button" className="btn-ghost btn-with-icon" onClick={exportData}>
-          <IconDownload size={15} /> Export backup
-        </button>
+        <button type="button" className="btn-ghost" onClick={exportData}>⬇ Export backup</button>
       </div>
 
       <div className="stat-grid">
-        <Stat Icon={IconSave} tone="green" label="Messages saved" value={formatCompact(data.totals.messages)} hint={`${formatCompact(data.totals.pinned)} pinned`} />
+        <Stat label="Messages saved" value={formatCompact(data.totals.messages)} hint={`${formatCompact(data.totals.pinned)} pinned`} />
         <Stat
-          Icon={IconBolt}
-          tone="blue"
-          trend={delta > 0 ? "up" : delta < 0 ? "down" : "flat"}
           label="This week"
           value={formatCompact(data.week.thisWeek)}
           hint={delta === 0 ? "same as last week" : `${delta > 0 ? "+" : ""}${formatCompact(delta)} vs last week`}
         />
-        <Stat Icon={IconUsers} tone="amber" label="Open orders" value={formatCompact(data.pipeline.openCount)} hint={`${formatCompact(data.pipeline.pipelineValue)} in pipeline`} />
-        <Stat Icon={IconCheck} tone="green" label="Completed value" value={formatCompact(data.pipeline.earned)} hint="from completed orders" />
+        <Stat label="Open orders" value={formatCompact(data.pipeline.openCount)} hint={`${formatCompact(data.pipeline.pipelineValue)} in pipeline`} />
+        <Stat label="Completed value" value={formatCompact(data.pipeline.earned)} hint="from completed orders" />
       </div>
 
       <div className="overview-cols overview-tools">
@@ -106,25 +85,17 @@ export default function Overview({ refreshKey, onOpenClients, onError }) {
 
       <div className="overview-cols">
         <section className="overview-card">
-          <div className="chart14-head">
-            <h3>Messages · last 14 days</h3>
-            <span className="chart14-total">
-              <strong>{totalMessages}</strong> saved
-            </span>
+          <h3>Messages · last 14 days</h3>
+          <div className="spark" role="img" aria-label="Messages saved per day">
+            {data.perDay.map((d) => (
+              <div className="spark-col" key={d.date} title={`${fmtDate(d.date)}: ${d.count}`}>
+                <div className="spark-bar" style={{ height: `${Math.max(6, (d.count / max) * 100)}%`, opacity: d.count ? 1 : 0.25 }} />
+              </div>
+            ))}
           </div>
-          <div className="chart14" role="img" aria-label={`Messages saved per day over the last 14 days: ${totalMessages} in total`}>
-            {data.perDay.map((d, i) => {
-              const day = new Date(`${String(d.date).slice(0, 10)}T12:00:00`);
-              return (
-                <div className={`chart14-col ${i === data.perDay.length - 1 ? "is-today" : ""} ${d.count ? "" : "is-empty"}`} key={d.date} title={`${fmtDate(d.date)}: ${d.count}`}>
-                  <span className="chart14-val">{d.count || ""}</span>
-                  <div className="chart14-track">
-                    <div className="chart14-bar" style={{ height: `${d.count ? Math.max(8, (d.count / max) * 100) : 4}%` }} />
-                  </div>
-                  <span className="chart14-day">{day.toLocaleDateString(undefined, { weekday: "narrow" })}</span>
-                </div>
-              );
-            })}
+          <div className="spark-labels">
+            <span>{fmtDate(data.perDay[0].date)}</span>
+            <span>Today</span>
           </div>
         </section>
 

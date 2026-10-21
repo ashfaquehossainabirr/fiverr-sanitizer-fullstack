@@ -1,4 +1,3 @@
-import { IconPlus } from "./icons.jsx";
 import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios.js";
 import ConfirmModal from "./ConfirmModal.jsx";
@@ -131,9 +130,7 @@ export default function Templates({ onUseTemplate, onError }) {
             fill them in with one click.
           </p>
         </div>
-        <button type="button" className="btn-primary btn-with-icon" onClick={openCreate}>
-          <IconPlus size={15} /> New template
-        </button>
+        <button type="button" className="btn-primary" onClick={openCreate}>+ New Template</button>
       </div>
 
       {templates.length > 0 && (

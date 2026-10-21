@@ -69,17 +69,16 @@ export default function Dashboard() {
   const tasksApi = useTasks(reportError);
   const taskCount = useMemo(() => openTaskCount(tasksApi.tasks), [tasksApi.tasks]);
 
-  const { addFocusSession } = tasksApi;
   const handleTimerComplete = useCallback(
     (evt) => {
       if (evt.kind === "focus") {
         notify(`Focus session done. Take a ${evt.restMinutes}-minute break.`, { duration: 5000 });
-        if (evt.taskId) addFocusSession(evt.taskId);
+        if (evt.taskId) tasksApi.addFocusSession(evt.taskId);
       } else {
         notify("Break over. Ready for the next session?", { duration: 5000 });
       }
     },
-    [notify, addFocusSession]
+    [notify, tasksApi.addFocusSession]
   );
   const timer = useFocusTimer(user?.id || user?._id, handleTimerComplete);
 
@@ -326,7 +325,7 @@ export default function Dashboard() {
     [clients]
   );
 
-  /* Ctrl/Cmd+K opens the palette from anywhere; "?" opens the shortcut list; Shift+N opens Notes. */
+  /* Ctrl/Cmd+K opens the palette from anywhere; "?" opens the shortcut list. */
   useEffect(() => {
     const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -339,7 +338,7 @@ export default function Dashboard() {
         setShortcutsOpen(true);
         return;
       }
-      // "N" = new task, Shift+N = go to Notes, unless the user is typing or a dialog is open.
+      // "N" = new task, unless the user is typing or a dialog is open.
       if (
         (e.key === "n" || e.key === "N") &&
         !e.ctrlKey && !e.metaKey && !e.altKey &&
@@ -347,8 +346,7 @@ export default function Dashboard() {
         !document.querySelector(".confirm-backdrop, .palette-backdrop, .modal-backdrop, .view-message-backdrop")
       ) {
         e.preventDefault();
-        if (e.shiftKey && e.key === "N") setView("notes");
-        else openNewTask();
+        openNewTask();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -371,7 +369,7 @@ export default function Dashboard() {
       go("overview", "Overview", "Goals, stats, calculator", IconChart),
       go("clients", "Clients & orders", "Deadlines and follow-ups", IconUsers),
       go("templates", "Templates", "Quick replies", IconQuote),
-      go("notes", "Notes", "Scratchpad · Shift+N", IconNote),
+      go("notes", "Notes", "Scratchpad for buyer details and ideas", IconNote),
       go("search", "Search saved messages", "Across every tab", IconSearch),
       ...tabs.map((t) => ({
         id: `tab-${t._id}`,
